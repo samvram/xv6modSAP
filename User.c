@@ -4,6 +4,6 @@
 
 int main(void)
 {
- printf(1,"Hello sam1997, kking and xghost");
+ printf(1,"Hello sam1997, kking and xghost\n");
  exit();
 }
