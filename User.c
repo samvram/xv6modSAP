@@ -2,11 +2,11 @@
 #include "stat.h"
 #include "user.h"
 
-int main(void)
+int main(char *argv[])
 {
 
 
- printf(1,"Hello sam1997, kking and xghost\n");
+ printf(1,"Hello %s",argv);
 
 
 
