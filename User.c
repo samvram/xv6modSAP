@@ -2,7 +2,7 @@
 #include "stat.h"
 #include "user.h"
 
-int main(char *argv[])
+int main(int n,char *argv[])
 {
 
 
