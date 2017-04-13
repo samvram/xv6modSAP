@@ -6,7 +6,7 @@ int main(int n,char *argv[])
 {
 
 
- printf(1,"Hello %s\n",*argv);
+ printf(1,"Hello %s \n",argv[1]);
 
 
 
