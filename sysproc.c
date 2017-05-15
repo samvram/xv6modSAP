@@ -7,6 +7,8 @@
 #include "mmu.h"
 #include "proc.h"
 
+uint seed;
+
 int
 sys_fork(void)
 {
@@ -35,6 +37,7 @@ sys_kill(void)
     return -1;
   return kill(pid);
 }
+
 
 int
 sys_getpid(void)
@@ -88,4 +91,29 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+//Adding random function
+int 
+sys_random(void)
+{
+        
+        //seed=10;
+	uint x = seed;
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	seed = x;
+	return x;
+}
+
+
+//Adding the setseed syscall
+int 
+sys_setseed(void)
+{
+  int x;
+  argint(0,&x);
+  seed=x;
+  return 0;
 }

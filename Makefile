@@ -178,7 +178,8 @@ UPROGS=\
         _User\
         _User_Sleeping\
         _sam\
-        
+        _random_implement\
+        _sseed\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -251,6 +252,8 @@ EXTRA=\
         User.c\
         User_Sleeping.c\
         sam.c\
+        sseed.c\
+        random_implement.c\
 	printf.c umalloc.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
