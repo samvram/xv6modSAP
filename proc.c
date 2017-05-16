@@ -7,6 +7,8 @@
 #include "proc.h"
 #include "spinlock.h"
 
+uint seed=5;
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -19,6 +21,22 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+
+int rand(int n)
+{
+        uint x = seed;
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	seed = x;
+	return (x%n);
+}
+
+int seedset(int n)
+{
+  seed=n;
+  return 0;
+}
 
 void
 pinit(void)
@@ -225,6 +243,30 @@ exit(void)
   panic("zombie exit");
 }
 
+
+//A function to show current process state
+int
+cps(void)
+{
+  struct proc *p;
+  
+  sti( );
+
+  acquire(&ptable.lock);
+  cprintf("name \t pid \t state \t \t JobDuration \n");
+  for(p=ptable.proc; p<&ptable.proc[NPROC]; p++){
+    if( p->state==SLEEPING )
+      cprintf("%s \t %d \t SLEEPING \t \n",p->name,p->pid); 
+    else if( p->state==RUNNING )
+      cprintf("%s \t %d \t RUNNING \t \n",p->name,p->pid);
+    else if( p->state==RUNNABLE )
+      cprintf("%s \t %d \t RUNNABLE \t \n",p->name,p->pid);
+  }
+  release(&ptable.lock);
+  return 0;
+}
+
+
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
@@ -304,6 +346,47 @@ scheduler(void)
       // It should have changed its p->state before coming back.
       proc = 0;
     }
+    release(&ptable.lock);
+
+  }
+}
+
+
+
+//New Random Scheduler
+void
+random_scheduler(void)
+{
+  struct proc *p;
+  //int i;
+ 
+  for(;;){
+    // Enable interrupts on this processor.
+    sti();
+
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+     // p=ptable.proc;
+      //for(i=0;i<rand(NPROC);i++)
+        //p++;
+       //p=&ptable.proc[rand(NPROC)];
+       if(p->state != RUNNABLE || p->pid!=rand(NPROC))
+        continue;
+
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+      swtch(&cpu->scheduler, p->context);
+      switchkvm();
+
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      proc = 0;
+     }    
     release(&ptable.lock);
 
   }

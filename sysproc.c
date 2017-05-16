@@ -7,7 +7,7 @@
 #include "mmu.h"
 #include "proc.h"
 
-uint seed;
+//uint seed;
 
 int
 sys_fork(void)
@@ -101,12 +101,7 @@ sys_random(void)
         //seed=10;
         int n;
         argint(0,&n);
-	uint x = seed;
-	x ^= x << 13;
-	x ^= x >> 17;
-	x ^= x << 5;
-	seed = x;
-	return (x%n);
+        return(rand(n));
 }
 
 
@@ -116,6 +111,14 @@ sys_setseed(void)
 {
   int x;
   argint(0,&x);
-  seed=x;
+  return(seedset(x));
+  //return 0;
+}
+
+//Adding the program state reading file
+int
+sys_pstate(void)
+{
+  cps( );
   return 0;
 }

@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int random(int);
 int setseed(int);
+int pstate(void);
 
 // ulib.c
 int stat(char*, struct stat*);

@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_random 22
 #define SYS_setseed 23
+#define SYS_pstate 24
