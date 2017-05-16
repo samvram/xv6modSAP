@@ -2,6 +2,20 @@
 #include "stat.h"
 #include "user.h"
 
+int nextProcessBirthTime(int m, int n)
+{
+int z = random(100)/99*(m-n)+n;
+z=z*72;
+return z;
+}
+
+int processRunTime(int m, int n)
+{
+int z = random(100)/99*(m-n)+n;
+z=z*72;
+return z;
+}
+
 int main(int n,char *argv[])
 {
  //User program to reate processes randomly
@@ -20,8 +34,8 @@ int main(int n,char *argv[])
  
 for(i=0;i<maxp;i++)
  {
-  snooze=random(100)/99*(maxwait-minwait)+minwait;
-  snooze=snooze*(69+3); 
+  //snooze=random(100)/99*(maxwait-minwait)+minwait;
+  snooze=nextProcessBirthTime(maxwait,minwait); 
   sleep(snooze);
   pi=fork( );
   if(pi<0)
@@ -34,8 +48,8 @@ for(i=0;i<maxp;i++)
   else
     {  
        printf(1,"Child %d created \n",getpid( ));
-       sleeper=random(100)/99*(maxrun-minrun)+minrun;
-       sleeper=sleeper*(69+3); 
+       //sleeper=random(100)/99*(maxrun-minrun)+minrun;
+       sleeper=processRunTime(maxrun,minrun); 
        sleep(sleeper);
        break;
      }
