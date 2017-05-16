@@ -99,12 +99,14 @@ sys_random(void)
 {
         
         //seed=10;
+        int n;
+        argint(0,&n);
 	uint x = seed;
 	x ^= x << 13;
 	x ^= x >> 17;
 	x ^= x << 5;
 	seed = x;
-	return x;
+	return (x%n);
 }
 
 

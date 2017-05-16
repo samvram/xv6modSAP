@@ -7,6 +7,6 @@
 
 int main(int n,char *argv[])
 {
- printf(1,"Random number: %d\n",random( ));
+ printf(1,"Random number: %d\n",random(atoi(argv[1])));
  exit();
 }

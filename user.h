@@ -23,7 +23,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int random(void);
+int random(int);
 int setseed(int);
 
 // ulib.c
