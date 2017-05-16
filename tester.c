@@ -49,6 +49,7 @@ for(i=0;i<maxp;i++)
     {  
        printf(1,"Child %d created \n",getpid( ));
        //sleeper=random(100)/99*(maxrun-minrun)+minrun;
+       chjd(getpid( ),(maxrun+minrun)/2);
        sleeper=processRunTime(maxrun,minrun); 
        sleep(sleeper);
        break;

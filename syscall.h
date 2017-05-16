@@ -23,3 +23,4 @@
 #define SYS_random 22
 #define SYS_setseed 23
 #define SYS_pstate 24
+#define SYS_chjd   25

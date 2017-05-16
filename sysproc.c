@@ -122,3 +122,12 @@ sys_pstate(void)
   cps( );
   return 0;
 }
+
+int
+sys_chjd(void)
+{
+  int pid,len;
+  argint(0,&pid);
+  argint(1,&len); 
+  return chjd( pid,len);
+}

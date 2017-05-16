@@ -58,7 +58,8 @@ mpmain(void)
   idtinit();       // load idt register
   xchg(&cpu->started, 1); // tell startothers() we're up
   //scheduler();     // start running processes
-  random_scheduler( );// The Random Scheduler for Phase IV
+  //random_scheduler( );// The Random Scheduler for Phase IV
+  sjf_scheduler( );
 }
 
 pde_t entrypgdir[];  // For entry.S

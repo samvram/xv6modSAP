@@ -22,6 +22,23 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+int chjd( int pid, int duration)
+{
+  struct proc *p;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if(p->pid==pid)
+     {
+       p->duration=duration;
+       break;
+     }
+  release(&ptable.lock);
+  return pid; 
+ }
+
+
+
 int rand(int n)
 {
         uint x = seed;
@@ -68,6 +85,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->ticket=-1;
+  p->duration=1;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -256,11 +274,11 @@ cps(void)
   cprintf("name \t pid \t state \t \t JobDuration \n");
   for(p=ptable.proc; p<&ptable.proc[NPROC]; p++){
     if( p->state==SLEEPING )
-      cprintf("%s \t %d \t SLEEPING \t \n",p->name,p->pid); 
+      cprintf("%s \t %d \t SLEEPING \t %d\n",p->name,p->pid,p->duration); 
     else if( p->state==RUNNING )
-      cprintf("%s \t %d \t RUNNING \t \n",p->name,p->pid);
+      cprintf("%s \t %d \t RUNNING \t %d\n",p->name,p->pid,p->duration);
     else if( p->state==RUNNABLE )
-      cprintf("%s \t %d \t RUNNABLE \t \n",p->name,p->pid);
+      cprintf("%s \t %d \t RUNNABLE \t %d\n",p->name,p->pid,p->duration);
   }
   release(&ptable.lock);
   return 0;
@@ -350,6 +368,54 @@ scheduler(void)
 
   }
 }
+
+
+//Shortest Job First Scheduler
+void
+sjf_scheduler(void)
+{
+  struct proc *p;
+  struct proc *p1;
+
+  for(;;){
+    // Enable interrupts on this processor.
+    sti();
+    
+    struct proc *shortJ;
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
+    
+
+    shortJ=p;
+    for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
+      if(p1->state != RUNNABLE)
+        continue;
+      if(shortJ->duration>p1->duration) // IF any process with job length shorter than the given job is there
+        shortJ=p1;
+      }
+      p=shortJ;
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+      swtch(&cpu->scheduler, p->context);
+      switchkvm();
+
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      proc = 0;
+    }
+    release(&ptable.lock);
+
+  }
+}
+
+
 
 //New Random Scheduler 2 Modified version
 void

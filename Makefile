@@ -183,6 +183,7 @@ UPROGS=\
         _ps\
         _tester\
         _checker\
+        _signalinfo\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -258,6 +259,7 @@ EXTRA=\
         sseed.c\
         random_implement.c\
         ps.c\
+        signalinfo.c\
         tester.c\
         checker.c\
 	printf.c umalloc.c\
