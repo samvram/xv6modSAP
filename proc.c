@@ -22,7 +22,8 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-int chjd( int pid, int duration)
+int chjd( int pid, int duration)          // Changes or allocates the job duration
+
 {
   struct proc *p;
 
@@ -30,7 +31,7 @@ int chjd( int pid, int duration)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->pid==pid)
      {
-       p->duration=duration;
+       p->duration=duration;              // Allocates time duration
        break;
      }
   release(&ptable.lock);
@@ -39,7 +40,7 @@ int chjd( int pid, int duration)
 
 
 
-int rand(int n)
+int rand(int n)               // Pseudo-Random generator using XOR-shift
 {
         uint x = seed;
 	x ^= x << 13;
@@ -49,7 +50,7 @@ int rand(int n)
 	return (x%n);
 }
 
-int seedset(int n)
+int seedset(int n)         // Initial value for random function
 {
   seed=n;
   return 0;
@@ -84,8 +85,8 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->ticket=-1;
-  p->duration=1;
+  p->ticket=-1;         // Alternative random function (not used further)
+  p->duration=1;        // Initialize duration for processes
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -264,15 +265,15 @@ exit(void)
 
 //A function to show current process state
 int
-cps(void)
-{
+cps(void)                  // Unique table maker to show present process details called by user
+{                          // by user program ps which in turn calls system call pstate()
   struct proc *p;
   
   sti( );
 
   acquire(&ptable.lock);
   cprintf("name \t pid \t state \t \t JobDuration \n");
-  for(p=ptable.proc; p<&ptable.proc[NPROC]; p++){
+  for(p=ptable.proc; p<&ptable.proc[NPROC]; p++){       // Check for current process status and print
     if( p->state==SLEEPING )
       cprintf("%s \t %d \t SLEEPING \t %d\n",p->name,p->pid,p->duration); 
     else if( p->state==RUNNING )
@@ -337,7 +338,7 @@ wait(void)
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
 void
-scheduler(void)
+scheduler(void)        // Default xv6 scheduler
 {
   struct proc *p;
 
@@ -375,13 +376,13 @@ void
 sjf_scheduler(void)
 {
   struct proc *p;
-  struct proc *p1;
+  struct proc *p1;      // Loop variable to chech shortest process
 
   for(;;){
     // Enable interrupts on this processor.
     sti();
     
-    struct proc *shortJ;
+    struct proc *shortJ;   // stores the shortest process
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -389,14 +390,14 @@ sjf_scheduler(void)
         continue;
     
 
-    shortJ=p;
+    shortJ=p;      // Acquire some runnable process
     for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
       if(p1->state != RUNNABLE)
         continue;
       if(shortJ->duration>p1->duration) // IF any process with job length shorter than the given job is there
         shortJ=p1;
       }
-      p=shortJ;
+      p=shortJ;      // p gets the shortest process
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -415,23 +416,93 @@ sjf_scheduler(void)
   }
 }
 
+/*
+//Shortest Job First with random Uniform Sampling for same job length
+void
+sjf_scheduler(void)
+{
+  struct proc *p;
+  struct proc *p1;      // Loop variable to chech shortest process
+  int tick,buf;
+  
+  for(;;){
+    // Enable interrupts on this processor.
+    sti();
+    
+    struct proc *shortJ;   // stores the shortest process
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
+    
+    tick=0;
+    shortJ=p;      // Acquire some runnable process
+    for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
+      if(p1->state != RUNNABLE)
+        continue;
+      if(shortJ->duration>p1->duration) // IF any process with job length shorter than the given job is there
+        shortJ=p1; 
+      }
+      p=shortJ;      // p gets the shortest process
 
+     for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
+       if(p1->state != RUNNABLE)
+         {
+           p1->ticket=-1; 
+           continue;
+         }
+       else if(shortJ->duration==p1->duration)
+         p1->ticket=tick++;
+       else
+         p1->ticket=-1;
+       }
+
+
+      if(tick!=0)
+      {
+        buf=rand(tick);
+        for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
+          if(p1->state == RUNNABLE && p1->ticket==buf)
+             p=p1;
+      }
+       
+      
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+      swtch(&cpu->scheduler, p->context);
+      switchkvm();
+
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      proc = 0;
+    }
+    release(&ptable.lock);
+
+  }
+}
+*/
 
 //New Random Scheduler 2 Modified version
 void
 random_scheduler(void)
 {
   struct proc *p;
-  int random;
+  int random;      // Variable to store random number
   for(;;){
     // Enable interrupts on this processor.
     sti();
-    random=rand(NPROC);
+    random=rand(NPROC);    // Generates a random number between 0 and number of processes(NPROC)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE || p->pid!=random)
-        continue;
+      if(p->state != RUNNABLE || p->pid!=random)    // Skips the process if not runnable and p not equal
+        continue;                                   // to generated randon number. In this way, only runnable
+                                                    // process run but at random due to OR statement in if statement
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -456,13 +527,12 @@ random_scheduler(void)
 //New Random Scheduler 1
 /*
 void
-random_scheduler(void)
+random_scheduler(void)   // Lotery Ticket method
 {
   struct proc *p;
-  //int i;
   int y;
-  int tickle;
-  int prevpid=-1;
+  int tickle;       // Stores the number of tickets
+  int prevpid=-1;   // Variable to store previous PID
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -470,7 +540,7 @@ random_scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-     if(p->state == RUNNABLE) 
+     if(p->state == RUNNABLE)                  // Checks for runnable processes and assign a ticket value
         p->ticket=tickle++;
      else
         p->ticket=-1;
@@ -479,7 +549,7 @@ random_scheduler(void)
     if(tickle==1)
     y=0;
     else
-    y=rand(tickle);
+    y=rand(tickle);              // A random number is generated between 0 to maximum ticket value (tickle)
     
 
       // Switch to chosen process.  It is the process's job
@@ -487,8 +557,8 @@ random_scheduler(void)
       // before jumping back to us.
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-     if(p->ticket == y && p->pid!=prevpid )
-      {
+     if(p->ticket == y && p->pid!=prevpid )     // Like a lottery, a random ticket number is assigned
+      {                                         // to process and checked if not equal to previous PID
       
       prevpid=p->pid;
       proc = p;

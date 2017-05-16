@@ -98,7 +98,7 @@ int
 sys_random(void)
 {
         
-        //seed=10;
+        //seed=10;  to be initialized by setseed()
         int n;
         argint(0,&n);
         return(rand(n));
@@ -123,6 +123,7 @@ sys_pstate(void)
   return 0;
 }
 
+// Change Job Duration for SJF scheduler
 int
 sys_chjd(void)
 {
